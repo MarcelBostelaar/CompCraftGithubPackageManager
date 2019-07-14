@@ -4,9 +4,16 @@ local httpfuncs = github_PM_filefetcher.loadSubmodule("GithubPackageManager","ht
 local url_handler = github_PM_filefetcher.loadSubmodule("GithubPackageManager","url_handler")
 local jsonparser = github_PM_filefetcher.loadSubmodule("GithubPackageManager","tinyjsonparser")
 
+local targetfolder = "build"
+
 local function getTreeURL(gitInfo, branch)
 	local url = "https://api.github.com/repos/" .. gitInfo.ownerName .. "/" .. gitInfo.repoName .."/git/trees/".. branch .."?recursive=1"
 	return url
+end
+
+local function getResourceURL(gitInfo, branch, relativeurl)
+  local url = "https://raw.githubusercontent.com/" .. gitInfo.ownerName .. "/" .. gitInfo.repoName .. "/" .. branch .. "/" .. relativeurl
+  return url
 end
 
 local function filter(func, treelist)
@@ -28,17 +35,34 @@ end
 
 local function filterSubdirectory(treelist, subdir)
   local function filterDirectory(item)
-    return item.path:sub(subdir:len()+1) == (subdir .. "/")
+    local subbed = item.path:sub(1,subdir:len()+1)
+    return subbed == (subdir .. "/")
   end
   return filter(filterDirectory, treelist)
 end
   
-function test_printallfiles(gitaddress, branch)
+local function getFilesInfo(gitaddress, branch)
   local info = url_handler.getGitInfo(gitaddress)
   local treeurl = getTreeURL(info, branch)
   local parsed = jsonparser.parse(httpfuncs.get(treeurl))
-  local ofinterest = filterBlob(filterSubdirectory(parsed.tree, "build"))
-  print(ofinterest)
+  local ofinterest = filterBlob(filterSubdirectory(parsed.tree, targetfolder))
+  local items = {}
+  for _,v in pairs(ofinterest) do
+    local struct = {}
+    struct.path = v.path:sub(targetfolder:len()+2)
+    struct.url = getResourceURL(info, branch, v.path)
+    items[#items+1] = struct
+  end
+  return items
 end
 
-test_printallfiles("https://github.com/MarcelBostelaar/DeepLearningAi.git", "master")
+local function copyRemoteFiles(gitaddress, branch, targetfolder)
+  local itemstocopy = getFilesInfo(gitaddress, branch)
+  for _,v in pairs(itemstocopy) do
+    httpfuncs.wget(v.url, targetfolder .. "/" .. v.path)
+  end
+end
+
+local this = {}
+this.copyRemoteFiles = copyRemoteFiles
+return this

@@ -25,7 +25,7 @@ local function get( sUrl )
 	return sResponse
 end
 
-function wget( sUrl, sFile, override)  
+local function wget( sUrl, sFile, override)  
 	if not http then
 		printError( "wget requires http API" )
 		printError( "Set http_enable to true in ComputerCraft.cfg" )
@@ -52,5 +52,40 @@ end
 
 -- end wget copy
 
-wget("https://raw.githubusercontent.com/kelseyhightower/helloworld/master/README.md", "test", true)
-shell.run("test")
+-- dofile copy
+
+local function dofile(absfilename) --dofile is broken in some versions
+	local file = loadfile(absfilename)
+	if file == nil then
+		error("Could not load file " .. absfilename)
+	end
+	return file()
+end
+
+-- end dofile copy
+
+local function copyFile(url, filename)
+	wget(url, "packages/GithubPackageManager/" .. filename, true)
+end
+
+print("Downloading filefetcher program")
+
+wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/master/setup/github_PM_filefetcher" ,"github_PM_filefetcher", true)
+wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/master/setup/packagepaths" ,"packagepaths", true)
+
+print("Finished downloading filefetcher program")
+print("Downloading bootstrapper code for package manager")
+
+copyFile("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/master/build/githubCommunicator", "githubCommunicator")
+copyFile("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/master/build/http/functions", "http/functions")
+copyFile("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/master/build/tinyjsonparser", "tinyjsonparser")
+copyFile("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/master/build/url_handler", "url_handler")
+copyFile("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/master/build/utils", "utils")
+
+print("Finished downloading bootstrapper code")
+print("Downloading full package manager")
+
+local gitCommunicator = dofile("packages/GithubPackageManager/" .. githubCommunicator)
+gitCommunicator.copyRemoteFiles("https://github.com/MarcelBostelaar/CompCraftGithubPackageManager", "master", "packages/GithubPackageManager")
+
+print("Finished installing package manager")
