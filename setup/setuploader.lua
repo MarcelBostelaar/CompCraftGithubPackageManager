@@ -85,7 +85,7 @@ copyFile("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPacka
 print("Finished downloading bootstrapper code")
 print("Downloading full package manager")
 
-local gitCommunicator = dofile("packages/GithubPackageManager/" .. githubCommunicator)
+local gitCommunicator = dofile("packages/GithubPackageManager/" .. "githubCommunicator")
 gitCommunicator.copyRemoteFiles("https://github.com/MarcelBostelaar/CompCraftGithubPackageManager", "master", "packages/GithubPackageManager")
 
 print("Finished installing package manager")
