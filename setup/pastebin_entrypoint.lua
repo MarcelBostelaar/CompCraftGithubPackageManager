@@ -61,6 +61,8 @@ local function dofile(absfilename) --dofile is broken in some versions
 	return file()
 end
 --end dofile insert
-
-wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/master/setup/setuploader.lua", "setuploader.lua", true)
+--branch insert
+local branch = "master"
+--end branch insert
+wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/setup/setuploader.lua", "setuploader.lua", true)
 dofile("setuploader.lua")

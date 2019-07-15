@@ -68,11 +68,12 @@ end
 
 
 print("Downloading filefetcher program")
-
+--branch insert
 local branch = "master"
-
-wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/setup/github_PM_filefetcher.lua" ,"github_PM_filefetcher", true)
-wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/setup/packagepaths" ,"packagepaths", true)
+--end branch insert
+wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/setup/GPM_filefetcher.lua" ,"GPM_filefetcher", true)
+wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/setup/packagepaths" ,"GPM/packagepaths", true)
+wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/setup/startupscript.lua" ,"GPM/startupscript", true)
 
 print("Finished downloading filefetcher program")
 print("Downloading bootstrapper code for package manager")
@@ -88,8 +89,32 @@ print("Downloading full package manager")
 
 local gitCommunicator = dofile("packages/GithubPackageManager/" .. "githubCommunicator")
 
-gitCommunicator.copyRemoteFiles("https://github.com/MarcelBostelaar/CompCraftGithubPackageManager", branch, "packages/GithubPackageManager")
+local giturl = "https://github.com/MarcelBostelaar/CompCraftGithubPackageManager"
+
+gitCommunicator.copyRemoteFiles(giturl, branch, "packages/GithubPackageManager")
+
+term.clear()
+print("Finished copying remote files")
+
+if not fs.exists( "startup" ) then
+  local temp = fs.open("startup", "w")
+  temp.close()
+end
+local input = fs.open("startup", "r")
+local text= input.readAll()
+input.close()
+local output = fs.open("startup", "w")
+output.writeLine([[shell.run("GPM/startupscript")]])
+output.write(text)
+output.close()
+
+
+print("Starting install")
+
+local entrypoint = dofile("packages/GithubPackageManager/" .. "entrypoint")
+entrypoint.install(giturl, branch)
+
+print("Finished installing package manager")
+
 
 fs.delete("setuploader.lua")
-term.clear()
-print("Finished installing package manager")

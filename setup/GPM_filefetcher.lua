@@ -23,7 +23,6 @@ end
 function join(list, joiner)
 	local total = nil
 	for _,v in ipairs(list) do
-		print(v)
 		if total == nil then
 			total = v
 		else
@@ -33,18 +32,44 @@ function join(list, joiner)
 	return total
 end	
 
-local function fetchPathOfModule(modulename)
-	local opened = fs.open("packagepaths", 'r')
+local packagepathPath = "GPM/packagepaths"
+
+function loadPackageData()
+	local opened = fs.open(packagepathPath, 'r')
 	if fs == nil then
 		error("Could not open package paths file")
 	end
 	local alltext = opened.readAll()
+  opened.close()
+  assert(alltext)
 	local deserialized = textutils.unserialize(alltext)
+  assert(deserialized,"Could not deserialize package paths file")
+  return deserialized
+end
+
+function addPackageData(packagejson, installationfolder)
+  assert(packagejson)
+  assert(installationfolder)
+  assert(packagejson.package_name)
+  local existingdata = loadPackageData()
+  local folderlocation = installationfolder .. "/" .. packagejson.package_name
+  existingdata[packagejson.package_name].folder = folderlocation
+  if packagejson.path ~= nil then
+    existingdata[packagejson.package_name].path = folderlocation .. "/" .. packagejson.path
+  end
+  
+  local output = fs.open(packagepathPath, 'w')
+  output.write(textutils.serialize(existingdata))
+  output.close()
+end
+
+local function fetchPathOfModule(modulename)
+	local deserialized = loadPackageData()
 	if deserialized[modulename] == nil then
 		print(deserialized)
 		error("Could not find package path " .. modulename)
 	end
-	return deserialized[modulename]
+	return deserialized[modulename].folder
 end
 
 --dofile insert
@@ -58,9 +83,14 @@ end
 --end dofile insert
 
 function getAbsolutePath(modulename, relativePath)
+  assert(modulename)
+  assert(relativePath)
 	local modulepath = fetchPathOfModule(modulename)
+  assert(modulepath, "Could not fetch path of module: " .. modulename)
 	local modulesplitted = split("/", modulepath)
+  assert(modulesplitted)
 	local splitted = split("/", relativePath)
+  assert(splitted)
 	local countedescapes = 0
 	local gotreal = false
 	for _,v in ipairs(splitted) do
@@ -71,13 +101,10 @@ function getAbsolutePath(modulename, relativePath)
 		end
 	end
 	local newpath = {}
-	print("PATH:")
 	for i=1,#modulesplitted - countedescapes do
-		print(modulesplitted[i])
 		newpath[i] = modulesplitted[i]
 	end
 	for i=countedescapes+1,#splitted do
-		print(splitted[i])
 		newpath[#newpath+1] = splitted[i]
 	end
 	local joined = join(newpath, "/")
@@ -85,12 +112,9 @@ function getAbsolutePath(modulename, relativePath)
 end
 
 function loadSubmodule(modulename, relativePath)
-	print("loading submodule " .. modulename .. " " .. relativePath)
 	local abspath = getAbsolutePath(modulename, relativePath)
 	if abspath == nil then
 		error("Could not resolve path " .. relativePath .. " in module " .. modulename)
 	end
-	print(abspath)
-	print(dofile == nil)
 	return dofile(abspath)
 end

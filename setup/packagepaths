@@ -1,3 +1,5 @@
 {
-	GithubPackageManager = "packages/GithubPackageManager"
+	GithubPackageManager = 
+  {folder = "packages/GithubPackageManager",
+  path = "packages/GithubPackageManager/path"}
 }

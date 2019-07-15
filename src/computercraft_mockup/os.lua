@@ -44,8 +44,8 @@ end
 ]]
 
 function this.loadAPI(filepath)
-  if filepath == "github_PM_filefetcher" then
-    _G.github_PM_filefetcher = require("computercraft_mockup/github_PM_filefetcher")
+  if filepath == "GPM_filefetcher" then
+    _G.GPM_filefetcher = require("computercraft_mockup/GPM_filefetcher")
     return
   else
     error("loadAPI for anything but the file fetcher is not supported in the mockup. Use dofile instead and make table modules")

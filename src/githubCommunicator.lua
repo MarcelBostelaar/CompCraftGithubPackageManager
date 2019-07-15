@@ -1,18 +1,35 @@
 require("computercraft_mockup/loadAllCCmockup")
-os.loadAPI("github_PM_filefetcher")
-local httpfuncs = github_PM_filefetcher.loadSubmodule("GithubPackageManager","http/functions")
-local url_handler = github_PM_filefetcher.loadSubmodule("GithubPackageManager","url_handler")
-local jsonparser = github_PM_filefetcher.loadSubmodule("GithubPackageManager","tinyjsonparser")
+os.loadAPI("GPM_filefetcher")
+local httpfuncs = GPM_filefetcher.loadSubmodule("GithubPackageManager","http/functions")
+local url_handler = GPM_filefetcher.loadSubmodule("GithubPackageManager","url_handler")
+local jsonparser = GPM_filefetcher.loadSubmodule("GithubPackageManager","tinyjsonparser")
 
 local targetfolder = "build"
 
 local function getTreeURL(gitInfo, branch)
+  assert(gitInfo)
+  assert(branch)
+  assert(gitInfo.ownerName)
+  assert(gitInfo.repoName)
 	local url = "https://api.github.com/repos/" .. gitInfo.ownerName .. "/" .. gitInfo.repoName .."/git/trees/".. branch .."?recursive=1"
 	return url
 end
 
 local function getResourceURL(gitInfo, branch, relativeurl)
+  assert(gitInfo)
+  assert(branch)
+  assert(gitInfo.ownerName)
+  assert(gitInfo.repoName)
   local url = "https://raw.githubusercontent.com/" .. gitInfo.ownerName .. "/" .. gitInfo.repoName .. "/" .. branch .. "/" .. relativeurl
+  return url
+end
+
+local function getPackageJsonURL(gitInfo, branch)
+  assert(gitInfo)
+  assert(branch)
+  assert(gitInfo.ownerName)
+  assert(gitInfo.repoName)
+  local url = "https://raw.githubusercontent.com/" .. gitInfo.ownerName .. "/" .. gitInfo.repoName .. "/" .. branch .. "/package.json"
   return url
 end
 
@@ -57,13 +74,29 @@ local function getFilesInfo(gitaddress, branch)
 end
 
 local function copyRemoteFiles(gitaddress, branch, targetfolder)
-  print(shell == nil)
   local itemstocopy = getFilesInfo(gitaddress, branch)
   for _,v in pairs(itemstocopy) do
     httpfuncs.wget(v.url, targetfolder .. "/" .. v.path, true)
   end
 end
 
+local function getPackageJson(gitaddress, branch)
+  assert(gitaddress)
+  assert(branch)
+  local info = url_handler.getGitInfo(gitaddress, branch)
+  print("debug, info gotten")
+  local url = getPackageJsonURL(info,branch)
+  print("debug, package url gotten")
+  local text = httpfuncs.get(url)
+  print("debug, downloaded package json")
+  assert(text)
+  local parsed = jsonparser.parse(text)
+  print("debug, parsed json")
+  assert(parsed)
+  return parsed
+end
+
 local this = {}
 this.copyRemoteFiles = copyRemoteFiles
+this.getPackageJson = getPackageJson
 return this

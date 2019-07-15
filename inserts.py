@@ -2,7 +2,7 @@ import re
 import os
 import shutil
 
-dofile = ("--dofile insert", "--end dofile insert", """
+insert = [("--dofile insert", "--end dofile insert", """
 local function dofile(absfilename) --dofile is broken in some versions
 	local file = loadfile(absfilename)
 	if file == nil then
@@ -10,8 +10,8 @@ local function dofile(absfilename) --dofile is broken in some versions
 	end
 	return file()
 end
-""")
-wget = ("--wget insert", "--end wget insert", """
+"""),
+("--wget insert", "--end wget insert", """
 local function wget( sUrl, sFile, override)  
 	if not http then
 		printError( "wget requires http API" )
@@ -35,8 +35,8 @@ local function wget( sUrl, sFile, override)
 		print( "Downloaded as "..sFile )
 	end
 end
-""")
-get = ("--get insert", "--end get insert", """
+"""),
+("--get insert", "--end get insert", """
 local function get( sUrl )
 	write( "Connecting to " .. sUrl .. "... " )
 
@@ -61,16 +61,20 @@ local function get( sUrl )
 	response.close()
 	return sResponse
 end
+"""),
+("--branch insert", "--end branch insert", """
+local branch = "master"
 """)
+
+]
 
 
 def placebetween(commentbefore, commentafter, code, text):
 	return re.sub(re.escape(commentbefore) + "[\\s\\S]*" + re.escape(commentafter), commentbefore +  code +  commentafter, text)
 	
 def process(text):
-	text = placebetween(dofile[0], dofile[1], dofile[2], text)
-	text = placebetween(wget[0], wget[1], wget[2], text)
-	text = placebetween(get[0], get[1], get[2], text)
+	for i in insert:
+		text = placebetween(i[0], i[1], i[2], text)
 	return text
 
 def sanitizeLuaFile(filename):
