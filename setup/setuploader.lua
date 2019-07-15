@@ -90,4 +90,6 @@ local gitCommunicator = dofile("packages/GithubPackageManager/" .. "githubCommun
 
 gitCommunicator.copyRemoteFiles("https://github.com/MarcelBostelaar/CompCraftGithubPackageManager", branch, "packages/GithubPackageManager")
 
+fs.delete("setuploader.lua")
+term.clear()
 print("Finished installing package manager")
