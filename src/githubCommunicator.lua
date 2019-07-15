@@ -57,9 +57,10 @@ local function getFilesInfo(gitaddress, branch)
 end
 
 local function copyRemoteFiles(gitaddress, branch, targetfolder)
+  print(shell == nil)
   local itemstocopy = getFilesInfo(gitaddress, branch)
   for _,v in pairs(itemstocopy) do
-    httpfuncs.wget(v.url, targetfolder .. "/" .. v.path)
+    httpfuncs.wget(v.url, targetfolder .. "/" .. v.path, true)
   end
 end
 

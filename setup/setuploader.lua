@@ -1,5 +1,5 @@
 -- wget copy since its not in every version yet
-
+--get insert
 local function get( sUrl )
 	write( "Connecting to " .. sUrl .. "... " )
 
@@ -24,7 +24,9 @@ local function get( sUrl )
 	response.close()
 	return sResponse
 end
+--end get insert
 
+--wget insert
 local function wget( sUrl, sFile, override)  
 	if not http then
 		printError( "wget requires http API" )
@@ -33,8 +35,7 @@ local function wget( sUrl, sFile, override)
 	end
 	 
 	-- Determine file to download
-	local sPath = shell.resolve( sFile )
-	if fs.exists( sPath ) and not override then
+	if fs.exists( sFile ) and not override then
 		print( "File already exists" )
 		return
 	end
@@ -42,18 +43,16 @@ local function wget( sUrl, sFile, override)
 	-- Do the get
 	local res = get( sUrl )
 	if res then
-		local file = fs.open( sPath, "w" )
+		local file = fs.open( sFile, "w" )
 		file.write( res )
 		file.close()
 
 		print( "Downloaded as "..sFile )
 	end
 end
+--end wget insert
 
--- end wget copy
-
--- dofile copy
-
+--dofile insert
 local function dofile(absfilename) --dofile is broken in some versions
 	local file = loadfile(absfilename)
 	if file == nil then
@@ -61,31 +60,34 @@ local function dofile(absfilename) --dofile is broken in some versions
 	end
 	return file()
 end
-
--- end dofile copy
+--end dofile insert
 
 local function copyFile(url, filename)
 	wget(url, "packages/GithubPackageManager/" .. filename, true)
 end
 
+
 print("Downloading filefetcher program")
 
-wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/master/setup/github_PM_filefetcher" ,"github_PM_filefetcher", true)
-wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/master/setup/packagepaths" ,"packagepaths", true)
+local branch = "master"
+
+wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/setup/github_PM_filefetcher.lua" ,"github_PM_filefetcher", true)
+wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/setup/packagepaths" ,"packagepaths", true)
 
 print("Finished downloading filefetcher program")
 print("Downloading bootstrapper code for package manager")
 
-copyFile("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/master/build/githubCommunicator", "githubCommunicator")
-copyFile("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/master/build/http/functions", "http/functions")
-copyFile("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/master/build/tinyjsonparser", "tinyjsonparser")
-copyFile("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/master/build/url_handler", "url_handler")
-copyFile("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/master/build/utils", "utils")
+copyFile("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/build/githubCommunicator", "githubCommunicator")
+copyFile("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/build/http/functions", "http/functions")
+copyFile("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/build/tinyjsonparser", "tinyjsonparser")
+copyFile("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/build/url_handler", "url_handler")
+copyFile("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/build/utils", "utils")
 
 print("Finished downloading bootstrapper code")
 print("Downloading full package manager")
 
 local gitCommunicator = dofile("packages/GithubPackageManager/" .. "githubCommunicator")
-gitCommunicator.copyRemoteFiles("https://github.com/MarcelBostelaar/CompCraftGithubPackageManager", "master", "packages/GithubPackageManager")
+
+gitCommunicator.copyRemoteFiles("https://github.com/MarcelBostelaar/CompCraftGithubPackageManager", branch, "packages/GithubPackageManager")
 
 print("Finished installing package manager")

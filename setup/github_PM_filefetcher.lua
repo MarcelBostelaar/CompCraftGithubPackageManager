@@ -47,6 +47,7 @@ local function fetchPathOfModule(modulename)
 	return deserialized[modulename]
 end
 
+--dofile insert
 local function dofile(absfilename) --dofile is broken in some versions
 	local file = loadfile(absfilename)
 	if file == nil then
@@ -54,6 +55,7 @@ local function dofile(absfilename) --dofile is broken in some versions
 	end
 	return file()
 end
+--end dofile insert
 
 function getAbsolutePath(modulename, relativePath)
 	local modulepath = fetchPathOfModule(modulename)

@@ -11,11 +11,16 @@ local function exists (sUrl)
 	end
 	return true
 end
-
+--get insert
 local function get( sUrl )
-	print( "Connecting to " .. sUrl .. "... " )
+	write( "Connecting to " .. sUrl .. "... " )
 
-	if not exists(sUrl) then
+	local ok, err = http.checkURL( sUrl )
+	if not ok then
+		print( "Failed." )
+		if err then
+			printError( err )
+		end
 		return nil
 	end
 
@@ -31,17 +36,17 @@ local function get( sUrl )
 	response.close()
 	return sResponse
 end
-
+--end get insert
+--wget insert
 local function wget( sUrl, sFile, override)  
 	if not http then
-		print( "wget requires http API" )
-		print( "Set http_enable to true in ComputerCraft.cfg" )
+		printError( "wget requires http API" )
+		printError( "Set http_enable to true in ComputerCraft.cfg" )
 		return
 	end
 	 
 	-- Determine file to download
-	local sPath = shell.resolve( sFile )
-	if fs.exists( sPath ) and not override then
+	if fs.exists( sFile ) and not override then
 		print( "File already exists" )
 		return
 	end
@@ -49,13 +54,14 @@ local function wget( sUrl, sFile, override)
 	-- Do the get
 	local res = get( sUrl )
 	if res then
-		local file = fs.open( sPath, "w" )
+		local file = fs.open( sFile, "w" )
 		file.write( res )
 		file.close()
 
 		print( "Downloaded as "..sFile )
 	end
 end
+--end wget insert
 
 
 this.exists = exists

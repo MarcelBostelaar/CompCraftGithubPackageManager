@@ -1,5 +1,5 @@
 -- wget copy since its not in every version yet
-
+--get insert
 local function get( sUrl )
 	write( "Connecting to " .. sUrl .. "... " )
 
@@ -24,7 +24,8 @@ local function get( sUrl )
 	response.close()
 	return sResponse
 end
-
+--end get insert
+--wget insert
 local function wget( sUrl, sFile, override)  
 	if not http then
 		printError( "wget requires http API" )
@@ -49,11 +50,9 @@ local function wget( sUrl, sFile, override)
 		print( "Downloaded as "..sFile )
 	end
 end
+-- end wget insert
 
--- end wget copy
-
--- dofile copy
-
+--dofile insert
 local function dofile(absfilename) --dofile is broken in some versions
 	local file = loadfile(absfilename)
 	if file == nil then
@@ -61,8 +60,7 @@ local function dofile(absfilename) --dofile is broken in some versions
 	end
 	return file()
 end
-
--- end dofile copy
+--end dofile insert
 
 wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/master/setup/setuploader.lua", "setuploader.lua", true)
-shell.run("setuploader.lua")
+dofile("setuploader.lua")
