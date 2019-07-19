@@ -1,4 +1,6 @@
--- wget copy since its not in every version yet
+--branch insert
+local branch = "master"
+--end branch insert
 --get insert
 local function get( sUrl )
 	write( "Connecting to " .. sUrl .. "... " )
@@ -34,8 +36,7 @@ local function wget( sUrl, sFile, override)
 	end
 	 
 	-- Determine file to download
-	local sPath = shell.resolve( sFile )
-	if fs.exists( sPath ) and not override then
+	if fs.exists( sFile ) and not override then
 		print( "File already exists" )
 		return
 	end
@@ -43,26 +44,14 @@ local function wget( sUrl, sFile, override)
 	-- Do the get
 	local res = get( sUrl )
 	if res then
-		local file = fs.open( sPath, "w" )
+		local file = fs.open( sFile, "w" )
 		file.write( res )
 		file.close()
 
 		print( "Downloaded as "..sFile )
 	end
 end
--- end wget insert
-
---dofile insert
-local function dofile(absfilename) --dofile is broken in some versions
-	local file, err = loadfile(absfilename)
-	if file == nil then
-		error("Could not load file " .. absfilename .. " : " .. err)
-	end
-	return file()
-end
---end dofile insert
---branch insert
-local branch = "master"
---end branch insert
-wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/setup/setuploader.lua", "setuploader.lua", true)
-dofile("setuploader.lua")
+--end wget insert
+wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/config/GPM_filefetcher.lua" ,"GPM/GPM_filefetcher", true)
+wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/config/packagepaths" ,"GPM/packagepaths", true)
+wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/config/startupscript.lua" ,"GPM/startupscript", true)

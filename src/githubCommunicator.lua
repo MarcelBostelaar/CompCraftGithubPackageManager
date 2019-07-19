@@ -1,5 +1,5 @@
 require("computercraft_mockup/loadAllCCmockup")
-os.loadAPI("GPM_filefetcher")
+os.loadAPI("GPM/GPM_filefetcher")
 local httpfuncs = GPM_filefetcher.loadSubmodule("GithubPackageManager","http/functions")
 local url_handler = GPM_filefetcher.loadSubmodule("GithubPackageManager","url_handler")
 local jsonparser = GPM_filefetcher.loadSubmodule("GithubPackageManager","tinyjsonparser")
@@ -30,6 +30,15 @@ local function getPackageJsonURL(gitInfo, branch)
   assert(gitInfo.ownerName)
   assert(gitInfo.repoName)
   local url = "https://raw.githubusercontent.com/" .. gitInfo.ownerName .. "/" .. gitInfo.repoName .. "/" .. branch .. "/package.json"
+  return url
+end
+
+local function getPostInstallScriptURL(gitInfo, branch)
+  assert(gitInfo)
+  assert(branch)
+  assert(gitInfo.ownerName)
+  assert(gitInfo.repoName)
+  local url = "https://raw.githubusercontent.com/" .. gitInfo.ownerName .. "/" .. gitInfo.repoName .. "/" .. branch .. "/PostInstallScript.lua"
   return url
 end
 
@@ -84,19 +93,33 @@ local function getPackageJson(gitaddress, branch)
   assert(gitaddress)
   assert(branch)
   local info = url_handler.getGitInfo(gitaddress, branch)
-  print("debug, info gotten")
   local url = getPackageJsonURL(info,branch)
-  print("debug, package url gotten")
   local text = httpfuncs.get(url)
-  print("debug, downloaded package json")
   assert(text)
   local parsed = jsonparser.parse(text)
-  print("debug, parsed json")
   assert(parsed)
   return parsed
+end
+
+local function getPostInstallScript(gitaddress, branch)
+  assert(gitaddress)
+  assert(branch)
+  local info = url_handler.getGitInfo(gitaddress, branch)
+  local url = getPostInstallScriptURL(info,branch)
+  assert(url)
+  print("getting  postinstall script")
+  local text = httpfuncs.get(url)
+  assert(text)
+  print(text)
+  print("loading file")
+  local loaded = loadstring(text)
+  assert(loaded)
+  print("loaded file")
+  return loaded
 end
 
 local this = {}
 this.copyRemoteFiles = copyRemoteFiles
 this.getPackageJson = getPackageJson
+this.getPostInstallScript = getPostInstallScript
 return this

@@ -1,0 +1,26 @@
+--build CC ready
+os.loadAPI("GPM/GPM_filefetcher")
+
+this = {}
+
+local configname = "urlaliases"
+
+local defaultalias = {}
+
+function this.getAlias(alias)
+  GPM_filefetcher.CreateConfigIfNotExist(configname, defaultalias)
+  GPM_filefetcher.ReplaceConfigIfCorrupt(configname, defaultalias)
+  return GPM_filefetcher.LoadConfig(configname)[alias]
+end
+
+function this.addAlias(URL, alias)
+  GPM_filefetcher.CreateConfigIfNotExist(configname, defaultalias)
+  GPM_filefetcher.ReplaceConfigIfCorrupt(configname, defaultalias)
+  local data = GPM_filefetcher.LoadConfig(configname)
+  assert(data)
+  data[alias] = URL
+  GPM_filefetcher.WriteConfig(configname, data)
+  print("Added alias " .. alias)
+end
+
+return this

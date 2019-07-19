@@ -44,7 +44,7 @@ end
 ]]
 
 function this.loadAPI(filepath)
-  if filepath == "GPM_filefetcher" then
+  if filepath == "GPM/GPM_filefetcher" then
     _G.GPM_filefetcher = require("computercraft_mockup/GPM_filefetcher")
     return
   else

@@ -17,7 +17,7 @@ local function get( sUrl )
 
 	local ok, err = http.checkURL( sUrl )
 	if not ok then
-		print( "Failed." )
+		error(err)
 		if err then
 			printError( err )
 		end
@@ -26,7 +26,7 @@ local function get( sUrl )
 
 	local response = http.get( sUrl , nil , true )
 	if not response then
-		print( "Failed." )
+		error( "Failed." )
 		return nil
 	end
 

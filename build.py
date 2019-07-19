@@ -1,6 +1,7 @@
 import shutil
 import errno
 import os
+import shared
 
 def copy(src, dest):
 	try:
@@ -22,16 +23,7 @@ def sanitizeLuaFile(file, targetname):
 	output = open(targetname, 'w')
 	output.write(text)
 	output.close()
-			
-def sanitizeLua(folder):
-	names = os.listdir(folder)
-	items = [os.path.join(folder,x) for x in names]
-	childfolders = [x for x in items if os.path.isdir(x)]
-	lua = [x for x in items if x[-4:] == ".lua" and os.path.isfile(x)]
-	for i in childfolders:
-		sanitizeLua(i)
-	for i in lua:
-		sanitizeLuaFile(i, i[:-4])
+
 
 try:
 	shutil.rmtree("build")
@@ -39,4 +31,4 @@ except Exception as e:
 	pass
 copy("src","build")
 shutil.rmtree("build/computercraft_mockup")
-sanitizeLua("build")
+shared.mapLuaFiles("build", lambda x : sanitizeLuaFile(x, x[:-4]))

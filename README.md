@@ -44,9 +44,15 @@ GPM install <your repo url here> <branchname here>
 ~~~~
 If the given url points to a github repository with the correct layout, it will be downloaded and installed.
 
+#### Features:
+* Custom post-install file execution
+* URL aliasing for easy use
+* Different branch support
+* Build in file fetcher for packages
+
 #### Future feature list:
 * Dependencies
-* Startup initialisation support
+* Startup script support
 
-#### Known bugs:
+#### Known problems:
 * Shell is unavailable in scripts loaded with the file fetcher due to not being excecuted via shell.

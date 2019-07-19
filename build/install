@@ -1,5 +1,5 @@
-require("computercraft_mockup/loadAllCCmockup")
-os.loadAPI("GPM_filefetcher")
+--build CC ready
+os.loadAPI("GPM/GPM_filefetcher")
 local GHcomm = GPM_filefetcher.loadSubmodule("GithubPackageManager","githubCommunicator")
 
 this = {}
@@ -12,7 +12,16 @@ function this.install(gitURL, branch)
   assert(packagejson.package_name)
   GHcomm.copyRemoteFiles(gitURL, branch, "packages/" .. packagejson.package_name)
   GPM_filefetcher.addPackageData(packagejson, "packages")
-  term.clear()
+  assert(GHcomm.getPostInstallScript)
+  local ok, runnableOrError = pcall(GHcomm.getPostInstallScript, gitURL, branch)
+  if ok then
+    print("Running post install script")
+    assert(runnableOrError)
+    runnableOrError()
+    print("Finished running post install script")
+  else
+    print("Could not retrieve post install script: " .. runnableOrError)
+  end
   print("Finished installing branch " .. branch .. " of package " .. gitURL)
   print("Please reboot the pc to complete installation")
 end

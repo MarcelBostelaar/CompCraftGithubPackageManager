@@ -5,7 +5,7 @@ local function get( sUrl )
 
 	local ok, err = http.checkURL( sUrl )
 	if not ok then
-		print( "Failed." )
+		error(err)
 		if err then
 			printError( err )
 		end
@@ -14,7 +14,7 @@ local function get( sUrl )
 
 	local response = http.get( sUrl , nil , true )
 	if not response then
-		print( "Failed." )
+		error( "Failed." )
 		return nil
 	end
 
@@ -54,9 +54,9 @@ end
 
 --dofile insert
 local function dofile(absfilename) --dofile is broken in some versions
-	local file = loadfile(absfilename)
+	local file, err = loadfile(absfilename)
 	if file == nil then
-		error("Could not load file " .. absfilename)
+		error("Could not load file " .. absfilename .. " : " .. err)
 	end
 	return file()
 end
@@ -71,9 +71,9 @@ print("Downloading filefetcher program")
 --branch insert
 local branch = "master"
 --end branch insert
-wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/setup/GPM_filefetcher.lua" ,"GPM_filefetcher", true)
-wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/setup/packagepaths" ,"GPM/packagepaths", true)
-wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/setup/startupscript.lua" ,"GPM/startupscript", true)
+wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/config/GPM_filefetcher.lua" ,"GPM/GPM_filefetcher", true)
+wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/config/packagepaths" ,"GPM/packagepaths", true)
+wget("https://raw.githubusercontent.com/MarcelBostelaar/CompCraftGithubPackageManager/" .. branch .. "/config/startupscript.lua" ,"GPM/startupscript", true)
 
 print("Finished downloading filefetcher program")
 print("Downloading bootstrapper code for package manager")
@@ -93,7 +93,6 @@ local giturl = "https://github.com/MarcelBostelaar/CompCraftGithubPackageManager
 
 gitCommunicator.copyRemoteFiles(giturl, branch, "packages/GithubPackageManager")
 
-term.clear()
 print("Finished copying remote files")
 
 if not fs.exists( "startup" ) then
@@ -111,8 +110,8 @@ output.close()
 
 print("Starting install")
 
-local entrypoint = dofile("packages/GithubPackageManager/" .. "entrypoint")
-entrypoint.install(giturl, branch)
+local install = dofile("packages/GithubPackageManager/" .. "install")
+install.install(giturl, branch)
 
 print("Finished installing package manager")
 

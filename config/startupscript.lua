@@ -1,4 +1,4 @@
-os.loadAPI("GPM_filefetcher")
+os.loadAPI("GPM/GPM_filefetcher")
 
 local function getpaths()
   local data = GPM_filefetcher.loadPackageData()

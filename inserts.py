@@ -1,12 +1,13 @@
 import re
 import os
 import shutil
+import shared
 
 insert = [("--dofile insert", "--end dofile insert", """
 local function dofile(absfilename) --dofile is broken in some versions
-	local file = loadfile(absfilename)
+	local file, err = loadfile(absfilename)
 	if file == nil then
-		error("Could not load file " .. absfilename)
+		error("Could not load file " .. absfilename .. " : " .. err)
 	end
 	return file()
 end
@@ -42,7 +43,7 @@ local function get( sUrl )
 
 	local ok, err = http.checkURL( sUrl )
 	if not ok then
-		print( "Failed." )
+		error(err)
 		if err then
 			printError( err )
 		end
@@ -51,7 +52,7 @@ local function get( sUrl )
 
 	local response = http.get( sUrl , nil , true )
 	if not response then
-		print( "Failed." )
+		error( "Failed." )
 		return nil
 	end
 
@@ -84,16 +85,5 @@ def sanitizeLuaFile(filename):
 	outputfile = open(filename, 'w')
 	outputfile.write(process(text))
 	outputfile.close()
-	
-def sanitizeLua(folder):
-	names = os.listdir(folder)
-	items = [os.path.join(folder,x) for x in names]
-	childfolders = [x for x in items if os.path.isdir(x)]
-	lua = [x for x in items if x[-4:] == ".lua" and os.path.isfile(x)]
-	for i in childfolders:
-		sanitizeLua(i)
-	for i in lua:
-		sanitizeLuaFile(i)
-		
-sanitizeLua("src")
-sanitizeLua("setup")
+
+shared.mapLuaFiles(".", sanitizeLuaFile)

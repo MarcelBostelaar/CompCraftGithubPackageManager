@@ -1,4 +1,4 @@
-function findAll(pattern, someString)
+local function findAll(pattern, someString)
 	local items = {}
 	local S,E = string.find(someString, pattern)
 	while S do
@@ -8,7 +8,7 @@ function findAll(pattern, someString)
 	return items
 end
 
-function split(pattern, someString)
+local function split(pattern, someString)
 	local matches = findAll(pattern, someString)
 	local prev = 0
 	local items = {}
@@ -20,7 +20,7 @@ function split(pattern, someString)
 	return items
 end
 
-function join(list, joiner)
+local function join(list, joiner)
 	local total = nil
 	for _,v in ipairs(list) do
 		if total == nil then
@@ -31,20 +31,65 @@ function join(list, joiner)
 	end
 	return total
 end	
+local configPath = "GPM"
+local packagepathPath = "packagepaths"
 
-local packagepathPath = "GPM/packagepaths"
-
-function loadPackageData()
-	local opened = fs.open(packagepathPath, 'r')
-	if fs == nil then
-		error("Could not open package paths file")
-	end
+--[[
+Loads and deserializes a config file
+]]
+function LoadConfig(file)
+	local opened = fs.open(configPath .. "/" .. file, 'r')
+  assert(opened, "Could not open config file: " .. configPath .. "/" .. file)
 	local alltext = opened.readAll()
   opened.close()
   assert(alltext)
 	local deserialized = textutils.unserialize(alltext)
-  assert(deserialized,"Could not deserialize package paths file")
+  assert(deserialized,"Could not deserialize " .. file)
   return deserialized
+end
+--[[
+Writes table to a config file if it doesnt exist yet
+]]
+function CreateConfigIfNotExist(file, defaultcontent)
+  local thispath = configPath .. "/" .. file
+	local opened = fs.open(thispath, 'r')
+	if opened == nil then
+    print("Config file ".. file .." didnt exist")
+		opened = fs.open(thispath, 'w')
+    opened.write(defaultcontent)
+    opened.close()
+	end
+end
+
+function ReplaceConfigIfCorrupt(file, content)
+	local opened = fs.open(configPath .. "/" .. file, 'r')
+  assert(opened, "Could not find config file: " .. configPath .. "/" .. file)
+	local alltext = opened.readAll()
+  opened.close()
+  assert(alltext)
+	local deserialized = textutils.unserialize(alltext)
+  if deserialized == nil then
+    print("Config file ".. file .." was corrupt")
+    WriteConfig(file, content)
+  end
+end
+
+--[[
+Serializes and writes a table to a config file
+]]
+function WriteConfig(file, content)
+  local opened = fs.open(configPath .. "/" .. file, 'w')
+  assert(opened, "cannot open " .. configPath .. "/" .. file)
+	opened.write(textutils.serialize(content))
+  opened.close()
+end
+
+local function WritePackageData(data)
+  WriteConfig(packagepathPath, data)
+end
+
+function loadPackageData()
+	return LoadConfig(packagepathPath)
 end
 
 function addPackageData(packagejson, installationfolder)
@@ -53,14 +98,14 @@ function addPackageData(packagejson, installationfolder)
   assert(packagejson.package_name)
   local existingdata = loadPackageData()
   local folderlocation = installationfolder .. "/" .. packagejson.package_name
+  if existingdata[packagejson.package_name] == nil then
+	existingdata[packagejson.package_name] = {}
+  end
   existingdata[packagejson.package_name].folder = folderlocation
   if packagejson.path ~= nil then
     existingdata[packagejson.package_name].path = folderlocation .. "/" .. packagejson.path
   end
-  
-  local output = fs.open(packagepathPath, 'w')
-  output.write(textutils.serialize(existingdata))
-  output.close()
+  WritePackageData(existingdata)
 end
 
 local function fetchPathOfModule(modulename)
@@ -74,9 +119,9 @@ end
 
 --dofile insert
 local function dofile(absfilename) --dofile is broken in some versions
-	local file = loadfile(absfilename)
+	local file, err = loadfile(absfilename)
 	if file == nil then
-		error("Could not load file " .. absfilename)
+		error("Could not load file " .. absfilename .. " : " .. err)
 	end
 	return file()
 end
